@@ -193,12 +193,22 @@ docker compose up -d --scale worker=3
 ```
 `scheduler` must stay at exactly one replica (see `docs/RUNBOOK.md`).
 
+**If you only changed a `NEXT_PUBLIC_*` variable in `.env`** (not actual
+code), a code pull/rebuild of the backend services won't touch it — that
+value is baked into the frontend's JS bundle at build time specifically.
+Rebuild just that image, with `--no-cache` to be certain the new value is
+actually used rather than a cached layer from before:
+```bash
+docker compose build --no-cache frontend && docker compose up -d frontend
+```
+
 ## Troubleshooting
 
 | Symptom | Likely cause |
 |---|---|
 | `curl https://outreach.watchup.site:7070/health` times out | Firewall isn't allowing 7070, or DNS hasn't propagated yet (`dig +short outreach.watchup.site`) |
 | nginx `502 Bad Gateway` | `docker compose ps` — is `api`/`frontend` actually running? `docker compose logs api` |
+| Frontend port returns 404 with `X-Powered-By: Express` | A different app already owns that host port — not ours. Set `FRONTEND_HOST_PORT` in `.env` to a free port, update the nginx `location /` `proxy_pass` to match, `docker compose up -d frontend`, `sudo nginx -t && sudo systemctl reload nginx`. (This is exactly what happened on the first deploy of this project — port 3000 was already taken, moved to 3001.) |
 | Browser console shows CORS errors | `CORS_ALLOWED_ORIGIN` in `.env` doesn't match the exact origin the browser sent (scheme + host + port must match exactly: `https://outreach.watchup.site:7070`) |
-| Login works but every other page 401s | `NEXT_PUBLIC_API_BASE_URL` was wrong *at build time* — it's baked into the JS bundle, so fix `.env` and `docker compose up --build -d frontend` (a plain restart won't pick up the new value) |
+| Browser DevTools Network tab shows requests going to `localhost:8080` (or any wrong host) instead of your real domain — often surfaces as the login request itself 401ing | `NEXT_PUBLIC_API_BASE_URL` was wrong *the last time `frontend` was built*. This is a browser-side JS bundle, not a container — Docker's internal network (`api:8080`) is irrelevant to it; the browser can only call real public URLs, which is what this variable bakes in. Editing `.env` alone does nothing: `docker compose build --no-cache frontend && docker compose up -d frontend`, then hard-refresh the browser. (`--no-cache` matters — a normal rebuild can reuse a cached layer from before the value was fixed.) |
 | certbot fails the HTTP-01 challenge | Port 80 isn't reachable from the internet (firewall, or something else bound to it) — use `--webroot`/DNS-01 instead, see step 5 |

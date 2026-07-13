@@ -156,26 +156,36 @@ func (c *Config) PostgresDSN() string {
 	)
 }
 
+// getEnv reads an env var, trimming whitespace/CRLF (a common corruption
+// when .env files cross Windows→Linux — Docker's env_file parser doesn't
+// strip trailing \r, so an untrimmed value can silently fail exact-string
+// comparisons like the admin password check without ever looking wrong).
 func getEnv(key, def string) string {
-	if v, ok := os.LookupEnv(key); ok && v != "" {
-		return v
+	if v, ok := os.LookupEnv(key); ok {
+		if v = strings.TrimSpace(v); v != "" {
+			return v
+		}
 	}
 	return def
 }
 
 func getEnvInt(key string, def int) int {
-	if v, ok := os.LookupEnv(key); ok && v != "" {
-		if n, err := strconv.Atoi(v); err == nil {
-			return n
+	if v, ok := os.LookupEnv(key); ok {
+		if v = strings.TrimSpace(v); v != "" {
+			if n, err := strconv.Atoi(v); err == nil {
+				return n
+			}
 		}
 	}
 	return def
 }
 
 func getEnvBool(key string, def bool) bool {
-	if v, ok := os.LookupEnv(key); ok && v != "" {
-		if b, err := strconv.ParseBool(v); err == nil {
-			return b
+	if v, ok := os.LookupEnv(key); ok {
+		if v = strings.TrimSpace(v); v != "" {
+			if b, err := strconv.ParseBool(v); err == nil {
+				return b
+			}
 		}
 	}
 	return def
