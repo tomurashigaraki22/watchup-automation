@@ -1,0 +1,95 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-watchup}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-watchup}
+      POSTGRES_DB: ${POSTGRES_DB:-watchup}
+    ports:
+      # Bound to localhost only — never expose Postgres directly to the internet.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-watchup}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      # Bound to localhost only — never expose Redis directly to the internet.
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: ["/app/api"]
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_ADDR: redis:6379
+      PROMPTS_DIR: /app/prompts
+    ports:
+      # Bound to localhost — the host nginx (with certbot TLS) reverse-proxies
+      # to this port; the container isn't reachable directly from outside.
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: ["/app/worker"]
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_ADDR: redis:6379
+      PROMPTS_DIR: /app/prompts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    command: ["/app/scheduler"]
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_ADDR: redis:6379
+      PROMPTS_DIR: /app/prompts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
+    ports:
+      # Bound to localhost — same reasoning as the api service above.
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

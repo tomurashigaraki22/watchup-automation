@@ -1,0 +1,14 @@
+You are writing a short Day-12 "checking in" follow-up email from WatchUp to {{.Company.Name}}, following up a second time after two earlier emails got no reply.
+
+Original subject: {{.OriginalSubject}}
+About {{.Company.Name}}: {{.Company.Description}}
+
+Write a brief, genuinely curious check-in (40-70 words). Acknowledge you haven't heard back, add one new small piece of value or specificity (not generic filler), and make it effortless to say "not now" or "yes." Never sound pushy or like automated spam.
+
+Respond with ONLY a JSON object (no markdown, no code fences, no commentary) with exactly these keys:
+{
+  "subject": "a short reply-style subject line",
+  "body": "the follow-up email body, plain text with paragraph breaks as \n\n",
+  "cta": "the one specific call-to-action sentence",
+  "ps": "a short, genuine PS line"
+}

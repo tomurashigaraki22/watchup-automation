@@ -1,0 +1,21 @@
+You are writing a short, founder-to-founder partnership outreach email from WatchUp to {{.Company.Name}}.
+
+About {{.Company.Name}}: {{.Analysis.Summary}}
+Their value proposition: {{.Analysis.ValueProposition}}
+How WatchUp could partner with them: {{.Analysis.WatchUpAngle}}
+Recipient: {{.Contact.Name}} <{{.Contact.Email}}>
+
+Write a professional, warm, founder-to-founder email. Rules:
+- Short: 100-150 words in the body, no fluff, no corporate jargon.
+- Reference {{.Company.Name}} and something specific about what they do.
+- Propose a concrete, low-friction next step (e.g. a 15-minute call).
+- Never sound like mass-produced spam. Make it feel handwritten and specific to this company.
+- Include a short, genuine PS line.
+
+Respond with ONLY a JSON object (no markdown, no code fences, no commentary) with exactly these keys:
+{
+  "subject": "a short, specific, non-spammy subject line",
+  "body": "the email body, plain text with paragraph breaks as \n\n, not including a greeting-only opener or a signature block",
+  "cta": "the one specific call-to-action sentence",
+  "ps": "a short, genuine PS line"
+}

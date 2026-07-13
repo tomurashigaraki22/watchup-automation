@@ -1,0 +1,20 @@
+# Env & secrets
+.env
+.env.*
+!.env.example
+!.env.local.example
+*.env.local
+
+# Go
+backend/bin/
+*.exe
+*.out
+
+# Node / Next
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# OS
+.DS_Store
+Thumbs.db

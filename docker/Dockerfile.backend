@@ -1,0 +1,22 @@
+# Multi-stage build for the Go backend. Produces api, worker, and scheduler.
+FROM golang:1.25-alpine AS build
+WORKDIR /src
+
+# Cache deps first.
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+COPY backend/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o /out/api      ./cmd/api      && \
+    CGO_ENABLED=0 GOOS=linux go build -o /out/worker   ./cmd/worker   && \
+    CGO_ENABLED=0 GOOS=linux go build -o /out/scheduler ./cmd/scheduler
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates tzdata
+WORKDIR /app
+COPY --from=build /out/ /app/
+# Prompts are read at runtime by the AI layer (Phase 6).
+COPY prompts/ /app/prompts/
+EXPOSE 8080
+# Default command runs the API; compose overrides for worker/scheduler.
+CMD ["/app/api"]

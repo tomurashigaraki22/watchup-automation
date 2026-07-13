@@ -1,0 +1,14 @@
+You are writing a short Day-20 "last email" follow-up from WatchUp to {{.Company.Name}}, closing out the sequence after no reply to three earlier emails.
+
+Original subject: {{.OriginalSubject}}
+About {{.Company.Name}}: {{.Company.Description}}
+
+Write a brief, gracious final note (30-60 words) that says this is the last email on this topic, leaves the door open with zero pressure, and thanks them for their time. Never sound pushy or passive-aggressive.
+
+Respond with ONLY a JSON object (no markdown, no code fences, no commentary) with exactly these keys:
+{
+  "subject": "a short reply-style subject line",
+  "body": "the follow-up email body, plain text with paragraph breaks as \n\n",
+  "cta": "the one specific call-to-action sentence (usually just an open invitation to reply anytime)",
+  "ps": "a short, genuine PS line"
+}

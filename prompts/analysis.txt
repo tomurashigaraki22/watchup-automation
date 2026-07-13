@@ -1,0 +1,14 @@
+You are analyzing a company as a potential partnership target for WatchUp, a video analytics and engagement platform.
+
+Company name: {{.Name}}
+Website: {{.Website}}
+Industry (if known): {{.Industry}}
+What we know so far: {{.Description}}
+
+Based on the above, respond with ONLY a JSON object (no markdown, no code fences, no commentary) with exactly these keys:
+{
+  "summary": "2-3 sentence plain-English summary of what this company does",
+  "industry": "their most likely industry/category",
+  "value_proposition": "what makes this company interesting as a partner",
+  "watchup_angle": "a specific, concrete way WatchUp could partner with or add value to this company"
+}
