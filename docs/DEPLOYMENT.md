@@ -63,11 +63,25 @@ sudo mkdir -p /opt/watchup-automation && sudo chown $USER /opt/watchup-automatio
 git clone <your-repo-url> /opt/watchup-automation
 ```
 
-Then copy the production env into place **on the VPS**:
+**If you used git, `.env.production` did *not* come along** — it's
+git-ignored on purpose (it has real secrets in it), so it was never
+committed. You must transfer that one file separately, from your local
+machine, **as a file copy, not by retyping/pasting its contents** (a
+hand-transcribed copy is exactly how a wrong value — e.g. a stale
+`localhost` URL from an earlier draft — silently ends up live):
+```powershell
+# from Windows PowerShell, on your local machine
+scp C:\Users\HP\Desktop\watchup-automation\.env.production youruser@<vps-ip>:/opt/watchup-automation/.env.production
+```
+
+Then, either way (scp'd whole directory, or git clone + separate
+`.env.production` transfer), put the production env into place **on the VPS**:
 ```bash
 cd /opt/watchup-automation
 cp .env.production .env
 chmod 600 .env   # readable only by you — it has real secrets in it
+# sanity check it's actually the production values, not a stale/dev copy:
+grep -E "APP_ENV|APP_BASE_URL|NEXT_PUBLIC_API_BASE_URL" .env
 ```
 
 ## 3. Install Docker + Docker Compose on the VPS (if not already present)
@@ -210,5 +224,5 @@ docker compose build --no-cache frontend && docker compose up -d frontend
 | nginx `502 Bad Gateway` | `docker compose ps` — is `api`/`frontend` actually running? `docker compose logs api` |
 | Frontend port returns 404 with `X-Powered-By: Express` | A different app already owns that host port — not ours. Set `FRONTEND_HOST_PORT` in `.env` to a free port, update the nginx `location /` `proxy_pass` to match, `docker compose up -d frontend`, `sudo nginx -t && sudo systemctl reload nginx`. (This is exactly what happened on the first deploy of this project — port 3000 was already taken, moved to 3001.) |
 | Browser console shows CORS errors | `CORS_ALLOWED_ORIGIN` in `.env` doesn't match the exact origin the browser sent (scheme + host + port must match exactly: `https://outreach.watchup.site:7070`) |
-| Browser DevTools Network tab shows requests going to `localhost:8080` (or any wrong host) instead of your real domain — often surfaces as the login request itself 401ing | `NEXT_PUBLIC_API_BASE_URL` was wrong *the last time `frontend` was built*. This is a browser-side JS bundle, not a container — Docker's internal network (`api:8080`) is irrelevant to it; the browser can only call real public URLs, which is what this variable bakes in. Editing `.env` alone does nothing: `docker compose build --no-cache frontend && docker compose up -d frontend`, then hard-refresh the browser. (`--no-cache` matters — a normal rebuild can reuse a cached layer from before the value was fixed.) |
+| Browser DevTools Network tab shows requests going to `localhost:8080` (or any wrong host) instead of your real domain — often surfaces as the login request itself 401ing | Two possible causes, check in this order. **(1)** `grep -E "APP_ENV|APP_BASE_URL|NEXT_PUBLIC_API_BASE_URL" .env` on the VPS — if these show `development`/`localhost`, `.env` itself has the wrong content (e.g. a hand-transcribed copy that picked up dev values instead of `.env.production`'s — see step 2's warning about `.env.production` being git-ignored). Fix the file first. **(2)** If `.env` is already correct, `NEXT_PUBLIC_API_BASE_URL` was still wrong *the last time `frontend` was built* — it's a browser-side JS bundle, not a container, so Docker's internal network is irrelevant to it and editing `.env` alone changes nothing until rebuilt: `docker compose build --no-cache frontend && docker compose up -d frontend`, then hard-refresh the browser. |
 | certbot fails the HTTP-01 challenge | Port 80 isn't reachable from the internet (firewall, or something else bound to it) — use `--webroot`/DNS-01 instead, see step 5 |

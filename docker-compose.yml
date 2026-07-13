@@ -84,7 +84,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.frontend
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://outreach.watchup.site:7070}
     ports:
       # Bound to localhost — same reasoning as the api service above.
       # Host-side port is configurable (FRONTEND_HOST_PORT) since 3000 is a
