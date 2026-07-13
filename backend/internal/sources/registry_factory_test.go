@@ -9,16 +9,17 @@ import (
 
 func TestBuildFromConfig(t *testing.T) {
 	cfg := &config.Config{
-		DiscoverySources: []string{"github", "product_hunt", "yc_directory", "ai_directory", "saas_directory", "rss"},
-		GitHubOrgsQuery:  "video",
-		RSSFeedURLs:      []string{"https://example.com/feed.xml"},
+		DiscoverySources:  []string{"github", "product_hunt", "yc_directory", "ai_directory", "saas_directory", "rss"},
+		GitHubOrgsQueries: []string{"developer tools", "API platform"},
+		RSSFeedURLs:       []string{"https://example.com/feed.xml"},
 	}
 
 	reg := sources.BuildFromConfig(cfg)
 	names := reg.Names()
 
 	want := map[string]bool{
-		"github_orgs:video":                true,
+		"github_orgs:developer tools":      true,
+		"github_orgs:API platform":         true,
 		"product_hunt":                     true,
 		"yc_directory":                     true,
 		"ai_directory":                     true,

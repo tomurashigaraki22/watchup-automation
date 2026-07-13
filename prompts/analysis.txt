@@ -1,4 +1,4 @@
-You are analyzing a company as a potential partnership target for WatchUp, a video analytics and engagement platform.
+You are analyzing a company as a potential partnership target for WatchUp, a real-time error tracking and observability platform for software engineering teams — it helps developers catch, debug, and monitor errors and system health in production.
 
 Company name: {{.Name}}
 Website: {{.Website}}

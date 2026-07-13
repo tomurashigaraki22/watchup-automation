@@ -1,4 +1,4 @@
-You are writing a short, founder-to-founder partnership outreach email from WatchUp to {{.Company.Name}}.
+You are writing a short, founder-to-founder partnership outreach email from WatchUp — a real-time error tracking and observability platform for software engineering teams — to {{.Company.Name}}.
 
 About {{.Company.Name}}: {{.Analysis.Summary}}
 Their value proposition: {{.Analysis.ValueProposition}}

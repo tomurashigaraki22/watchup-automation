@@ -59,10 +59,10 @@ type Config struct {
 	SendMode         string // manual | automatic
 
 	// Discovery
-	DiscoverySources []string // enabled scheduled sources: github, rss, product_hunt, yc_directory, ai_directory, saas_directory
-	GitHubToken      string
-	GitHubOrgsQuery  string
-	RSSFeedURLs      []string
+	DiscoverySources  []string // enabled scheduled sources: github, rss, product_hunt, yc_directory, ai_directory, saas_directory
+	GitHubToken       string
+	GitHubOrgsQueries []string // comma-separated — one GitHubOrgsSource is created per query
+	RSSFeedURLs       []string
 
 	// Validation
 	ValidationSMTPProbe bool // live RCPT TO probe; off by default to protect sender reputation
@@ -113,10 +113,10 @@ func Load() (*Config, error) {
 		SendDelayMaxSecs: getEnvInt("SEND_DELAY_MAX_SECONDS", 240),
 		SendMode:         strings.ToLower(getEnv("SEND_MODE", "manual")),
 
-		DiscoverySources: getEnvList("DISCOVERY_SOURCES", []string{"github"}),
-		GitHubToken:      getEnv("GITHUB_TOKEN", ""),
-		GitHubOrgsQuery:  getEnv("GITHUB_ORGS_QUERY", "video analytics"),
-		RSSFeedURLs:      getEnvList("RSS_FEED_URLS", nil),
+		DiscoverySources:  getEnvList("DISCOVERY_SOURCES", []string{"github"}),
+		GitHubToken:       getEnv("GITHUB_TOKEN", ""),
+		GitHubOrgsQueries: getEnvList("GITHUB_ORGS_QUERY", []string{"developer tools"}),
+		RSSFeedURLs:       getEnvList("RSS_FEED_URLS", nil),
 
 		ValidationSMTPProbe: getEnvBool("EMAIL_VALIDATION_SMTP_PROBE", false),
 	}

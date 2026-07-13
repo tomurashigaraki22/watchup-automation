@@ -15,7 +15,9 @@ func BuildFromConfig(cfg *config.Config) *Registry {
 	for _, name := range cfg.DiscoverySources {
 		switch strings.ToLower(strings.TrimSpace(name)) {
 		case "github", "github_orgs":
-			enabled = append(enabled, NewGitHubOrgsSource(cfg.GitHubOrgsQuery, cfg.GitHubToken))
+			for _, query := range cfg.GitHubOrgsQueries {
+				enabled = append(enabled, NewGitHubOrgsSource(query, cfg.GitHubToken))
+			}
 		case "rss":
 			for _, feedURL := range cfg.RSSFeedURLs {
 				enabled = append(enabled, NewRSSSource(feedURL))
