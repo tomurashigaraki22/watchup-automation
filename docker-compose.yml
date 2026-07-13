@@ -7,7 +7,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-watchup}
     ports:
       # Bound to localhost only — never expose Postgres directly to the internet.
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
     image: redis:7-alpine
     ports:
       # Bound to localhost only — never expose Redis directly to the internet.
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -40,7 +40,7 @@ services:
     ports:
       # Bound to localhost — the host nginx (with certbot TLS) reverse-proxies
       # to this port; the container isn't reachable directly from outside.
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${API_HOST_PORT:-8080}:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -87,7 +87,10 @@ services:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
     ports:
       # Bound to localhost — same reasoning as the api service above.
-      - "127.0.0.1:3000:3000"
+      # Host-side port is configurable (FRONTEND_HOST_PORT) since 3000 is a
+      # common port other things on a shared VPS may already be using —
+      # container-internal port always stays 3000 regardless.
+      - "127.0.0.1:${FRONTEND_HOST_PORT:-3000}:3000"
     depends_on:
       - api
 

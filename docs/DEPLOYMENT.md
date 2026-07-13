@@ -14,9 +14,18 @@ are given exactly.
 
 ```
 Internet ──443/7070──▶ nginx (host, certbot TLS) ──▶ 127.0.0.1:8080  api (docker)
-                                                  └──▶ 127.0.0.1:3000  frontend (docker)
+                                                  └──▶ 127.0.0.1:3001  frontend (docker)
                               (postgres :5432, redis :6379 — docker, localhost-only, never public)
 ```
+
+Host-side ports (8080/3001/5432/6379) are all configurable —
+`API_HOST_PORT`/`FRONTEND_HOST_PORT`/`POSTGRES_HOST_PORT`/`REDIS_HOST_PORT`
+in `.env` — in case any of them collide with something else already running
+on the VPS. The frontend defaults to **3001, not 3000**, because port 3000 is
+a common default other apps use and is exactly the kind of collision that
+bit this deployment the first time around (see Troubleshooting below).
+Container-internal ports never change; only update the nginx `proxy_pass`
+lines if you change these.
 
 ## 1. DNS (do this first — it takes time to propagate)
 
@@ -76,12 +85,23 @@ cd /opt/watchup-automation
 docker compose up --build -d postgres redis api worker scheduler frontend
 docker compose ps          # all should show "healthy" or "running"
 curl -s http://127.0.0.1:8080/health   # {"status":"ok",...}
-curl -sI http://127.0.0.1:3000         # HTTP/1.1 200
+curl -sI http://127.0.0.1:3001         # HTTP/1.1 200, from Next.js
 ```
 
 `docker-compose.yml` binds `postgres`/`redis`/`api`/`frontend` to
 `127.0.0.1` only — nothing here is internet-reachable yet, which is
 intentional (nginx is the only public entry point, set up next).
+
+**Check the response is actually ours.** If `curl -I` on the frontend port
+returns a 404 with `X-Powered-By: Express`, that's a different app answering
+— Next.js identifies as `X-Powered-By: Next.js`, never Express, and neither
+does our Go API (Fiber). This means the host port is already claimed by
+something unrelated. Confirm with `docker compose ps` (is `frontend` even
+running?) and `docker compose logs frontend`, then either stop whatever else
+owns that port or — simpler and what this repo defaults to — set
+`FRONTEND_HOST_PORT=<a free port>` in `.env`, keep the nginx config's
+`location /` `proxy_pass` in sync with it, and
+`docker compose up -d frontend`.
 
 ## 5. nginx + certbot (runs on the VPS host, not in Docker)
 
