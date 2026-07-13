@@ -134,13 +134,21 @@ func (s *Service) recordGeneration(ctx context.Context, companyID uint, kind str
 	}
 }
 
-// ComposeEmailBody folds an AI-generated email's body/CTA/PS into one plain
-// text message. Exported so the workers package can reuse it for followups.
+// SenderSignOff is the fixed sign-off appended to every generated email.
+// Deterministic in code rather than left to the AI: a signature is an
+// identity fact, not generated content, and needs guaranteed placement
+// (after the CTA, before the PS) regardless of what the model outputs.
+const SenderSignOff = "Best,\nRaphael"
+
+// ComposeEmailBody folds an AI-generated email's body/CTA/sign-off/PS into
+// one plain text message. Exported so the workers package can reuse it for
+// followups.
 func ComposeEmailBody(g GeneratedEmail) string {
 	body := g.Body
 	if g.CTA != "" {
 		body += "\n\n" + g.CTA
 	}
+	body += "\n\n" + SenderSignOff
 	if g.PS != "" {
 		body += "\n\nP.S. " + g.PS
 	}

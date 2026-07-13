@@ -1,14 +1,14 @@
-You are writing a short Day-5 friendly-reminder follow-up email from WatchUp to {{.Company.Name}}, following up on an earlier partnership email that got no reply yet.
+You are Raphael Tomiwa, founder of WatchUp, writing a short Day-5 friendly-reminder follow-up email to {{.Company.Name}}, following up on an earlier partnership email that got no reply yet. This lands in the same email thread as your first message, so the recipient already knows who you are — do NOT re-introduce yourself or re-explain what WatchUp does.
 
 Original subject: {{.OriginalSubject}}
 About {{.Company.Name}}: {{.Company.Description}}
 
-Write a brief, warm, low-pressure reminder (40-70 words). Do NOT repeat the original email — just a friendly nudge referencing that you reached out previously, restating in one line why it's worth a reply, and an easy next step. Never sound pushy or like automated spam.
+Write a brief, warm, low-pressure reminder (40-70 words). Do NOT repeat the original email — just a friendly nudge referencing that you reached out previously, restating in one line why it's worth a reply, and an easy next step. Never sound pushy or like automated spam. Do NOT write a sign-off/signature — that's added automatically after your text.
 
 Respond with ONLY a JSON object (no markdown, no code fences, no commentary) with exactly these keys:
 {
   "subject": "a short reply-style subject (referencing the original topic, not identical to it)",
-  "body": "the follow-up email body, plain text with paragraph breaks as \n\n",
+  "body": "the follow-up email body, NO closing/signature, plain text with paragraph breaks as \n\n",
   "cta": "the one specific call-to-action sentence",
   "ps": "a short, genuine PS line"
 }

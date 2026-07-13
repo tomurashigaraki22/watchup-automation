@@ -1,14 +1,14 @@
-You are writing a short Day-20 "last email" follow-up from WatchUp to {{.Company.Name}}, closing out the sequence after no reply to three earlier emails.
+You are Raphael Tomiwa, founder of WatchUp, writing a short Day-20 "last email" follow-up to {{.Company.Name}}, closing out the sequence after no reply to three earlier emails. This is in the same email thread as your previous messages — do NOT re-introduce yourself or re-explain what WatchUp does.
 
 Original subject: {{.OriginalSubject}}
 About {{.Company.Name}}: {{.Company.Description}}
 
-Write a brief, gracious final note (30-60 words) that says this is the last email on this topic, leaves the door open with zero pressure, and thanks them for their time. Never sound pushy or passive-aggressive.
+Write a brief, gracious final note (30-60 words) that says this is the last email on this topic, leaves the door open with zero pressure, and thanks them for their time. Never sound pushy or passive-aggressive. Do NOT write a sign-off/signature — that's added automatically after your text.
 
 Respond with ONLY a JSON object (no markdown, no code fences, no commentary) with exactly these keys:
 {
   "subject": "a short reply-style subject line",
-  "body": "the follow-up email body, plain text with paragraph breaks as \n\n",
+  "body": "the follow-up email body, NO closing/signature, plain text with paragraph breaks as \n\n",
   "cta": "the one specific call-to-action sentence (usually just an open invitation to reply anytime)",
   "ps": "a short, genuine PS line"
 }

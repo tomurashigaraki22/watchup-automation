@@ -183,6 +183,32 @@ func TestService_GenerateFollowup_RecordsGeneration(t *testing.T) {
 	}
 }
 
+func TestComposeEmailBody_SignOffOrderedBetweenCTAAndPS(t *testing.T) {
+	body := ai.ComposeEmailBody(ai.GeneratedEmail{
+		Body: "Intro paragraph.",
+		CTA:  "Got 15 min this week?",
+		PS:   "Loved your launch.",
+	})
+
+	ctaIdx := strings.Index(body, "Got 15 min this week?")
+	signOffIdx := strings.Index(body, ai.SenderSignOff)
+	psIdx := strings.Index(body, "P.S. Loved your launch.")
+
+	if ctaIdx < 0 || signOffIdx < 0 || psIdx < 0 {
+		t.Fatalf("expected CTA, sign-off, and PS all present, got %q", body)
+	}
+	if !(ctaIdx < signOffIdx && signOffIdx < psIdx) {
+		t.Errorf("expected order CTA < sign-off < PS, got indices cta=%d signoff=%d ps=%d in %q", ctaIdx, signOffIdx, psIdx, body)
+	}
+}
+
+func TestComposeEmailBody_SignOffPresentEvenWithoutCTAOrPS(t *testing.T) {
+	body := ai.ComposeEmailBody(ai.GeneratedEmail{Body: "Just the intro."})
+	if !strings.Contains(body, ai.SenderSignOff) {
+		t.Errorf("expected sign-off present even with no CTA/PS, got %q", body)
+	}
+}
+
 func containsAll(s string, subs ...string) bool {
 	for _, sub := range subs {
 		if !strings.Contains(s, sub) {

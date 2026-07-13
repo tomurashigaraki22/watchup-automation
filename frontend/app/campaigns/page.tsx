@@ -12,6 +12,10 @@ export default function CampaignsPage() {
   const [sendMode, setSendMode] = useState("manual");
   const [busyId, setBusyId] = useState<number | null>(null);
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editDailyLimit, setEditDailyLimit] = useState(25);
+  const [editSendMode, setEditSendMode] = useState("manual");
+
   function load() {
     api
       .listCampaigns()
@@ -45,6 +49,17 @@ export default function CampaignsPage() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  function startEdit(c: Campaign) {
+    setEditingId(c.id);
+    setEditDailyLimit(c.daily_limit);
+    setEditSendMode(c.send_mode);
+  }
+
+  async function saveEdit(id: number) {
+    await withBusy(id, () => api.updateCampaign(id, { daily_limit: editDailyLimit, send_mode: editSendMode }));
+    setEditingId(null);
   }
 
   return (
@@ -91,55 +106,91 @@ export default function CampaignsPage() {
             </tr>
           </thead>
           <tbody>
-            {campaigns.map((c) => (
-              <tr key={c.id} className="border-b border-slate-100 last:border-0">
-                <td className="py-2 font-medium">{c.name}</td>
-                <td className="py-2">
-                  <StatusBadge status={c.status} />
-                </td>
-                <td className="py-2">{c.daily_limit}</td>
-                <td className="py-2">
-                  <StatusBadge status={c.send_mode} />
-                </td>
-                <td className="py-2">
-                  <div className="flex gap-1.5">
-                    {c.status === "active" ? (
+            {campaigns.map((c) =>
+              editingId === c.id ? (
+                <tr key={c.id} className="border-b border-slate-100 last:border-0 bg-brand-50/40">
+                  <td className="py-2 font-medium">{c.name}</td>
+                  <td className="py-2">
+                    <StatusBadge status={c.status} />
+                  </td>
+                  <td className="py-2">
+                    <input
+                      type="number"
+                      className="input w-24"
+                      value={editDailyLimit}
+                      onChange={(e) => setEditDailyLimit(Number(e.target.value))}
+                    />
+                  </td>
+                  <td className="py-2">
+                    <select className="input" value={editSendMode} onChange={(e) => setEditSendMode(e.target.value)}>
+                      <option value="manual">Manual</option>
+                      <option value="automatic">Automatic</option>
+                    </select>
+                  </td>
+                  <td className="py-2">
+                    <div className="flex gap-1.5">
+                      <button className="btn-primary" disabled={busyId === c.id} onClick={() => saveEdit(c.id)}>
+                        Save
+                      </button>
+                      <button className="btn-secondary" onClick={() => setEditingId(null)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={c.id} className="border-b border-slate-100 last:border-0">
+                  <td className="py-2 font-medium">{c.name}</td>
+                  <td className="py-2">
+                    <StatusBadge status={c.status} />
+                  </td>
+                  <td className="py-2">{c.daily_limit}</td>
+                  <td className="py-2">
+                    <StatusBadge status={c.send_mode} />
+                  </td>
+                  <td className="py-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      <button className="btn-secondary" disabled={busyId === c.id} onClick={() => startEdit(c)}>
+                        Edit
+                      </button>
+                      {c.status === "active" ? (
+                        <button
+                          className="btn-secondary"
+                          disabled={busyId === c.id}
+                          onClick={() => withBusy(c.id, () => api.pauseCampaign(c.id))}
+                        >
+                          Pause
+                        </button>
+                      ) : c.status === "paused" ? (
+                        <button
+                          className="btn-secondary"
+                          disabled={busyId === c.id}
+                          onClick={() => withBusy(c.id, () => api.resumeCampaign(c.id))}
+                        >
+                          Resume
+                        </button>
+                      ) : null}
                       <button
                         className="btn-secondary"
                         disabled={busyId === c.id}
-                        onClick={() => withBusy(c.id, () => api.pauseCampaign(c.id))}
+                        onClick={() => withBusy(c.id, () => api.cloneCampaign(c.id))}
                       >
-                        Pause
+                        Clone
                       </button>
-                    ) : c.status === "paused" ? (
-                      <button
-                        className="btn-secondary"
-                        disabled={busyId === c.id}
-                        onClick={() => withBusy(c.id, () => api.resumeCampaign(c.id))}
-                      >
-                        Resume
-                      </button>
-                    ) : null}
-                    <button
-                      className="btn-secondary"
-                      disabled={busyId === c.id}
-                      onClick={() => withBusy(c.id, () => api.cloneCampaign(c.id))}
-                    >
-                      Clone
-                    </button>
-                    {c.status !== "deleted" && (
-                      <button
-                        className="btn-danger"
-                        disabled={busyId === c.id}
-                        onClick={() => withBusy(c.id, () => api.deleteCampaign(c.id))}
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {c.status !== "deleted" && (
+                        <button
+                          className="btn-danger"
+                          disabled={busyId === c.id}
+                          onClick={() => withBusy(c.id, () => api.deleteCampaign(c.id))}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            )}
             {campaigns.length === 0 && (
               <tr>
                 <td colSpan={5} className="py-6 text-center text-slate-400">
